@@ -1,0 +1,36 @@
+# Configuración del proyecto
+
+data:
+  raw_path: "data/raw"
+  processed_path: "data/processed"
+  img_size: [128, 128]
+  test_size: 0.2
+  random_state: 42
+
+preprocessing:
+  resize: true
+  grayscale: true
+  normalize: true
+  equalize_hist: false
+
+features:
+  hog:
+    orientations: 9
+    pixels_per_cell: [8, 8]
+    cells_per_block: [2, 2]
+    
+  lbp:
+    num_points: 24
+    radius: 3
+    method: "uniform"
+
+model:
+  type: "NeuralNetwork"  # o "NeuralNetwork"
+  # Parámetros para Red Neuronal
+  
+  save_path: "models/"
+
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1_score"]
+  save_confusion_matrix: true
+  results_path: "results/"

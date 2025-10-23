@@ -1,10 +1,10 @@
 # Car Plate Classifier
 
-Proyecto de visión por computadora para clasificación de placas vehiculares usando descriptores HOG y (por definir).
+Proyecto de visión por computadora para clasificación de placas vehiculares usando descriptores HOG y BRISK.
 
 ## Características
-- Extracción de características con HOG y (por definir)
-- Clasificación usando (redes neuronales)
+- Extracción de características con HOG y BRISK.
+- Clasificación usando redes neuronales
 - Interfaz gráfica para predicción
 - Métricas de evaluación completas
 
@@ -32,7 +32,7 @@ python app/gui.py
 
 ## Resultados
 - Accuracy HOG: XX%
-- Accuracy (otro): XX%
+- Accuracy BRISK: XX%
 
 ## Autores
 [Ricardo Contreras Garzón](https://github.com/RickContreras)

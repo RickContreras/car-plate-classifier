@@ -18,11 +18,11 @@ features:
     orientations: 9
     pixels_per_cell: [8, 8]
     cells_per_block: [2, 2]
-    
-  lbp:
-    num_points: 24
-    radius: 3
-    method: "uniform"
+
+  brisk:
+    threshold: 30
+    octaves: 3
+    pattern_scale: 1.0
 
 model:
   type: "NeuralNetwork"  # o "NeuralNetwork"

@@ -285,3 +285,6 @@ results/
 .idea/
 *.swp
 *.swo
+
+# Kaggle credentials
+kaggle.json

@@ -1,36 +1,84 @@
-# Configuración del proyecto
+# ============================================================================
+# Configuración del Proyecto de Clasificación de Placas Vehiculares
+# ============================================================================
 
+# ----------------------------------------------------------------------------
+# DATOS
+# ----------------------------------------------------------------------------
 data:
   raw_path: "data/raw"
   processed_path: "data/processed"
-  img_size: [128, 128]
-  test_size: 0.2
-  random_state: 42
-
-preprocessing:
-  resize: true
-  grayscale: true
-  normalize: true
-  equalize_hist: false
-
-features:
-  hog:
-    orientations: 9
-    pixels_per_cell: [8, 8]
-    cells_per_block: [2, 2]
-
-  brisk:
-    threshold: 30
-    octaves: 3
-    pattern_scale: 1.0
-
-model:
-  type: "NeuralNetwork"  # o "NeuralNetwork"
-  # Parámetros para Red Neuronal
+  img_size: [128, 128]  # Tamaño para redimensionar las imágenes [ancho, alto]
+  test_size: 0.2        # 20% para prueba, 80% para entrenamiento
+  random_state: 42      # Semilla para reproducibilidad
   
-  save_path: "models/"
+# ----------------------------------------------------------------------------
+# PREPROCESAMIENTO
+# ----------------------------------------------------------------------------
+preprocessing:
+  resize: true           # Redimensionar a img_size
+  grayscale: true        # Convertir a escala de grises (recomendado para HOG/BRISK)
+  normalize: true        # Normalizar valores de píxeles [0, 1]
+  equalize_hist: false   # Ecualización de histograma (útil para imágenes con bajo contraste)
+  
+# ----------------------------------------------------------------------------
+# EXTRACCIÓN DE CARACTERÍSTICAS
+# ----------------------------------------------------------------------------
+features:
+  # HOG (Histogram of Oriented Gradients)
+  # Mejor para detectar formas y bordes rectangulares como placas
+  hog:
+    orientations: 9           # Número de bins de orientación (9 es estándar)
+    pixels_per_cell: [8, 8]   # Tamaño de celda en píxeles
+    cells_per_block: [2, 2]   # Número de celdas por bloque para normalización
+    # Características generadas: ~8100 para imagen 128x128
+  
+  # BRISK (Binary Robust Invariant Scalable Keypoints)
+  # Mejor para detectar puntos de interés invariantes a escala/rotación
+  brisk:
+    threshold: 30         # Umbral de detección de keypoints (menor = más keypoints)
+    octaves: 3           # Número de octavas para detección multi-escala
+    pattern_scale: 1.0   # Factor de escala del patrón de muestreo
+    # Características generadas: 512 (tamaño fijo mediante estadísticas)
 
+# ----------------------------------------------------------------------------
+# MODELOS DE CLASIFICACIÓN
+# ----------------------------------------------------------------------------
+model:
+  save_path: "models/"
+  
+  # Parámetros para SVM
+  svm:
+    kernel: "rbf"        # Kernel RBF (Radial Basis Function) - mejor para datos no lineales
+    C: 1.0              # Parámetro de regularización
+    gamma: "scale"      # Coeficiente del kernel (auto-ajustado)
+    probability: true    # Habilitar estimación de probabilidades
+  
+  # Parámetros para Random Forest
+  random_forest:
+    n_estimators: 100    # Número de árboles en el bosque
+    max_depth: 20        # Profundidad máxima de los árboles
+    min_samples_split: 5 # Mínimo de muestras para dividir un nodo
+    min_samples_leaf: 2  # Mínimo de muestras en hoja
+    n_jobs: -1          # Usar todos los núcleos disponibles
+  
+  # Parámetros para Red Neuronal
+  neural_network:
+    epochs: 50           # Número máximo de épocas
+    batch_size: 32       # Tamaño del lote
+    learning_rate: 0.001 # Tasa de aprendizaje inicial
+    dropout_rates: [0.5, 0.3, 0.2]  # Dropout para cada capa densa
+    hidden_layers: [256, 128, 64]   # Neuronas en capas ocultas
+    early_stopping_patience: 10     # Épocas sin mejora antes de detener
+    reduce_lr_patience: 5           # Épocas sin mejora antes de reducir LR
+    validation_split: 0.2           # 20% del train para validación
+
+# ----------------------------------------------------------------------------
+# EVALUACIÓN Y RESULTADOS
+# ----------------------------------------------------------------------------
 evaluation:
   metrics: ["accuracy", "precision", "recall", "f1_score"]
-  save_confusion_matrix: true
+  save_confusion_matrix: true   # Guardar matrices de confusión
+  save_training_history: true   # Guardar historial de entrenamiento (NN)
+  save_classification_report: true  # Guardar reporte detallado
   results_path: "results/"

@@ -1,5 +1,5 @@
 """
-Evaluation module for detection models.
+Módulo de evaluación para modelos de detección.
 """
 
 from .metrics import calculate_iou, evaluate_detections, MetricsCalculator

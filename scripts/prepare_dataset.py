@@ -155,7 +155,7 @@ def prepare_dataset(
     output_file.parent.mkdir(parents=True, exist_ok=True)
     dataset.save(str(output_file))
     
-    print(f"\n✓ Dataset guardado en: {output_path}")
+    print(f"\n  Dataset guardado en: {output_path}")
     print(f"{'='*60}\n")
 
 

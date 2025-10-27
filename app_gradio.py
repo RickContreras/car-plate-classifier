@@ -234,9 +234,9 @@ with gr.Blocks(title="🚗 Detector de Placas Vehiculares", theme=gr.themes.Soft
     
     gr.Examples(
         examples=[
-            ["data/raw/Cars0.png", "Ambos"],
-            ["data/raw/Cars1.png", "HOG"],
-            ["data/raw/Cars2.png", "BRISK"],
+            ["data/raw/images/Cars0.png", "Ambos"],
+            ["data/raw/images/Cars1.png", "HOG"],
+            ["data/raw/images/Cars2.png", "BRISK"],
         ],
         inputs=[input_image, model_selector],
         outputs=[output_image, output_text, quick_info],

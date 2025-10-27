@@ -1,6 +1,6 @@
-# BRISK Configuration for FC Detection Project
+# Configuración BRISK para FC Detection Project
 
-# Feature Extractor Configuration
+# Configuración del Extractor de Características
 feature_extractor:
   type: brisk
   params:
@@ -10,7 +10,7 @@ feature_extractor:
     octaves: 3
     pattern_scale: 1.0
 
-# Model Architecture Configuration
+# Configuración de Arquitectura del Modelo
 model:
   name: 'detection_brisk'
   architecture:
@@ -36,7 +36,7 @@ model:
   
   l2_reg: 0.0
 
-# Training Configuration
+# Configuración de Entrenamiento
 training:
   epochs: 100
   batch_size: 32
@@ -70,13 +70,13 @@ training:
     tensorboard:
       enabled: true
 
-# Data Configuration
+# Configuración de Datos
 data:
   train_ratio: 0.8
   shuffle: true
   seed: 42
 
-# Paths
+# Rutas
 paths:
   images: 'data/raw/images'
   annotations: 'data/raw/annotations'
@@ -85,6 +85,6 @@ paths:
   logs: 'logs'
   results: 'results'
 
-# Evaluation Configuration
+# Configuración de Evaluación
 evaluation:
   iou_thresholds: [0.5, 0.75, 0.9]

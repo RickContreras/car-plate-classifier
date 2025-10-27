@@ -58,10 +58,7 @@ fc-detection-project/
 │
 ├── 📄 README.md                     # Documentación principal
 ├── 📄 requirements.txt              # Dependencias Python
-├── 📄 setup.py                      # Instalación del paquete
-├── 📄 setup.cfg                     # Configuración de herramientas
 ├── 📄 .gitignore                    # Archivos ignorados por Git
-├── 📄 LICENSE                       # Licencia MIT
 └── 📄 run_pipeline.sh               # Script para pipeline completo
 ```
 

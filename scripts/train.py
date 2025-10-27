@@ -57,7 +57,7 @@ def plot_training_history(history, save_path: str):
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
-    print(f"✓ Gráfico de historial de entrenamiento guardado en: {save_path}")
+    print(f"  Gráfico de historial de entrenamiento guardado en: {save_path}")
     plt.close()
 
 
@@ -80,7 +80,7 @@ def train_model(config_path: str, dataset_path: str, feature_type: str):
     # Cargar dataset
     print("Cargando dataset...")
     dataset = load_dataset(dataset_path)
-    print(f"✓ Cargadas {len(dataset)} muestras")
+    print(f"  Cargadas {len(dataset)} muestras")
     
     # Dividir dataset
     data_config = config['data']
@@ -93,9 +93,9 @@ def train_model(config_path: str, dataset_path: str, feature_type: str):
     X_train, y_train = train_dataset.features, train_dataset.bboxes
     X_val, y_val = val_dataset.features, val_dataset.bboxes
     
-    print(f"✓ Muestras de entrenamiento: {len(train_dataset)}")
-    print(f"✓ Muestras de validación: {len(val_dataset)}")
-    print(f"✓ Dimensión de características: {X_train.shape[1]}")
+    print(f"Muestras de entrenamiento: {len(train_dataset)}")
+    print(f"Muestras de validación: {len(val_dataset)}")
+    print(f"Dimensión de características: {X_train.shape[1]}")
     
     # Crear modelo
     model_config = config['model']
@@ -194,7 +194,7 @@ def train_model(config_path: str, dataset_path: str, feature_type: str):
     metrics_path = results_dir / f"{model_config['name']}_metrics.json"
     with open(metrics_path, 'w') as f:
         json.dump(metrics, f, indent=2)
-    print(f"✓ Métricas guardadas en: {metrics_path}")
+    print(f"  Métricas guardadas en: {metrics_path}")
     
     print(f"\n{'='*60}")
     print("¡Entrenamiento completado exitosamente!")

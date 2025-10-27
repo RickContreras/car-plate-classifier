@@ -1,5 +1,5 @@
 """
-Dataset class for detection tasks.
+Clase de dataset para tareas de detección.
 """
 
 from .utils import DetectionDataset, load_dataset

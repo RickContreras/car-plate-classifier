@@ -1,5 +1,5 @@
 """
-Data module for dataset loading and preprocessing.
+Módulo de datos para carga y preprocesamiento de datasets.
 """
 
 from .dataset import DetectionDataset, load_dataset

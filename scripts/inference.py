@@ -55,7 +55,7 @@ def perform_inference(
     # Cargar modelo
     print(f"Cargando modelo: {model_path}")
     model = keras.models.load_model(model_path, compile=False)
-    print("✓ Modelo cargado")
+    print("  Modelo cargado")
     
     # Inicializar extractor de características
     feature_params = config['feature_extractor']['params']
@@ -67,7 +67,7 @@ def perform_inference(
     else:
         raise ValueError(f"Unknown feature type: {feature_type}")
     
-    print(f"✓ Extractor de características inicializado: {extractor}")
+    print(f"  Extractor de características inicializado: {extractor}")
     
     # Cargar imagen
     print(f"\nCargando imagen: {image_path}")
@@ -78,23 +78,23 @@ def perform_inference(
         return
     
     height, width = image.shape[:2]
-    print(f"✓ Imagen cargada: {width}x{height}")
+    print(f"  Imagen cargada: {width}x{height}")
     
     # Extraer características
     print("\nExtrayendo características...")
     features = extractor.extract(image)
     features = np.expand_dims(features, axis=0)  # Agregar dimensión de batch
-    print(f"✓ Características extraídas: {features.shape}")
+    print(f"  Características extraídas: {features.shape}")
     
     # Predecir bounding box
     print("\nPrediciendo bounding box...")
     pred_bbox_norm = model.predict(features, verbose=0)[0]
-    print(f"✓ Bbox normalizado: [{pred_bbox_norm[0]:.3f}, {pred_bbox_norm[1]:.3f}, {pred_bbox_norm[2]:.3f}, {pred_bbox_norm[3]:.3f}]")
+    print(f"  Bbox normalizado: [{pred_bbox_norm[0]:.3f}, {pred_bbox_norm[1]:.3f}, {pred_bbox_norm[2]:.3f}, {pred_bbox_norm[3]:.3f}]")
     
     # Desnormalizar bbox
     pred_bbox = denormalize_bbox(pred_bbox_norm, width, height)
     xmin, ymin, xmax, ymax = pred_bbox
-    print(f"✓ Bbox en píxeles: ({xmin}, {ymin}, {xmax}, {ymax})")
+    print(f"  Bbox en píxeles: ({xmin}, {ymin}, {xmax}, {ymax})")
     
     # Dibujar bounding box
     result_image = image.copy()
@@ -123,7 +123,7 @@ def perform_inference(
     # Guardar resultado
     if output_path:
         cv2.imwrite(output_path, result_image)
-        print(f"\n✓ Resultado guardado en: {output_path}")
+        print(f"\n  Resultado guardado en: {output_path}")
     
     # Mostrar resultado
     if show:

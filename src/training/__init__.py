@@ -1,5 +1,5 @@
 """
-Training module for detection models.
+Módulo de entrenamiento para modelos de detección.
 """
 
 from .trainer import Trainer

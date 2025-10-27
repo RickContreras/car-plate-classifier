@@ -1,6 +1,6 @@
-# HOG Configuration for FC Detection Project
+# Configuración HOG para FC Detection Project
 
-# Feature Extractor Configuration
+# Configuración del Extractor de Características
 feature_extractor:
   type: hog
   params:
@@ -11,7 +11,7 @@ feature_extractor:
     target_size: [200, 200]
     transform_sqrt: true
 
-# Model Architecture Configuration
+# Configuración de Arquitectura del Modelo
 model:
   name: 'detection_hog'
   architecture:
@@ -37,7 +37,7 @@ model:
   
   l2_reg: 0.0
 
-# Training Configuration
+# Configuración de Entrenamiento
 training:
   epochs: 100
   batch_size: 32
@@ -71,13 +71,13 @@ training:
     tensorboard:
       enabled: true
 
-# Data Configuration
+# Configuración de Datos
 data:
   train_ratio: 0.8
   shuffle: true
   seed: 42
 
-# Paths
+# Rutas
 paths:
   images: 'data/raw/images'
   annotations: 'data/raw/annotations'
@@ -86,6 +86,6 @@ paths:
   logs: 'logs'
   results: 'results'
 
-# Evaluation Configuration
+# Configuración de Evaluación
 evaluation:
   iou_thresholds: [0.5, 0.75, 0.9]

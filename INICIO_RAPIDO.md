@@ -2,7 +2,7 @@
 
 ## 📋 Requisitos Previos
 
-- Python 3.8 o superior
+- Python 3.12.3 o superior
 - pip (gestor de paquetes de Python)
 - 4GB de RAM mínimo
 - 2GB de espacio en disco
@@ -11,7 +11,6 @@
 
 ```bash
 git clone https://github.com/RickContreras/car-plate-classifier.git
-cd car-plate-classifier/fc-detection-project
 ```
 
 ## 🐍 Paso 2: Crear Entorno Virtual
@@ -184,18 +183,6 @@ python scripts/evaluate.py \
 python compare_models.py
 ```
 
-### Análisis
-```bash
-# Análisis de errores
-python analyze_errors.py
-
-# Test de robustez
-python test_robustness.py
-
-# Benchmark de velocidad
-python benchmark_speed.py
-```
-
 ### Inferencia Individual
 ```bash
 # Con HOG
@@ -218,22 +205,6 @@ python scripts/inference.py \
 ---
 
 ## 🐛 Solución de Problemas Comunes
-
-### Error: "No module named 'tensorflow'"
-```bash
-pip install tensorflow>=2.13.0
-```
-
-### Error: "No se encontró kaggle.json"
-```bash
-mkdir -p ~/.kaggle
-cp /ruta/a/tu/kaggle.json ~/.kaggle/
-chmod 600 ~/.kaggle/kaggle.json
-```
-
-### Error: "CUDA not found" (GPU)
-**No es necesario GPU** - El proyecto funciona perfectamente en CPU. 
-El mensaje es solo informativo.
 
 ### Error: "Out of memory"
 Reduce el batch size en los archivos de configuración (`configs/*.yaml`):
@@ -270,8 +241,6 @@ Después de completar la instalación básica:
 
 1. **Probar la aplicación web** (`app_gradio.py`)
 2. **Revisar documentación** en `docs/` y `PRUEBAS_RECOMENDADAS.md`
-3. **Experimentar con mejoras** (ver `TESTING_RECOMMENDATIONS.md`)
-4. **Leer el resumen del proyecto** en `PROJECT_SUMMARY.md`
 
 ---
 
@@ -280,7 +249,6 @@ Después de completar la instalación básica:
 Para problemas o preguntas:
 - Revisar `STRUCTURE.md` para entender la arquitectura
 - Consultar `INTEGRATION_GUIDE.md` para integración
-- Ver `docs/QUICKSTART.md` para más detalles
 
 ---
 

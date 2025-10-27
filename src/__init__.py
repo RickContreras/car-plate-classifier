@@ -1,8 +1,9 @@
 """
-FC Detection - Fully Connected Neural Networks for Bounding Box Detection
+FC Detection - Redes Neuronales Fully Connected para Detección de Bounding Boxes
 
-A professional framework for training detection models using traditional
-feature extraction methods (HOG, BRISK) with fully connected neural networks.
+Un framework profesional para entrenar modelos de detección usando métodos
+tradicionales de extracción de características (HOG, BRISK) con redes neuronales
+completamente conectadas.
 """
 
 __version__ = "0.1.0"

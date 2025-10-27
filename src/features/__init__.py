@@ -1,5 +1,5 @@
 """
-Feature extraction module for FC Detection Project.
+Módulo de extracción de características para FC Detection Project.
 """
 
 from .base import FeatureExtractor

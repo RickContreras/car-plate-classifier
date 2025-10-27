@@ -47,12 +47,12 @@ def evaluate_model(model_path: str, dataset_path: str, config: dict, feature_typ
     print(f"Cargando modelo desde: {model_path}")
     model = keras.models.load_model(model_path, compile=False)
     model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-    print("✓ Modelo cargado")
+    print("  Modelo cargado")
     
     # Cargar dataset
     print(f"\nCargando dataset desde: {dataset_path}")
     dataset = load_dataset(dataset_path)
-    print(f"✓ Cargadas {len(dataset)} muestras")
+    print(f"  Cargadas {len(dataset)} muestras")
     
     # Dividir dataset para obtener conjunto de prueba
     data_config = config['data']
@@ -65,12 +65,12 @@ def evaluate_model(model_path: str, dataset_path: str, config: dict, feature_typ
     X_test = test_dataset.features
     y_test = test_dataset.bboxes
     
-    print(f"✓ Muestras de prueba: {len(test_dataset)}")
+    print(f"  Muestras de prueba: {len(test_dataset)}")
     
     # Realizar predicciones
     print("\nRealizando predicciones...")
     y_pred = model.predict(X_test, verbose=0)
-    print("✓ Predicciones completadas")
+    print("  Predicciones completadas")
     
     # Calcular métricas
     print("\nCalculando métricas...")
@@ -93,7 +93,7 @@ def evaluate_model(model_path: str, dataset_path: str, config: dict, feature_typ
     with open(metrics_path, 'w') as f:
         json.dump(metrics, f, indent=2)
     
-    print(f"✓ Métricas guardadas en: {metrics_path}")
+    print(f"  Métricas guardadas en: {metrics_path}")
     
     # Imprimir predicciones de muestra
     print("\nPredicciones de Muestra:")

@@ -85,11 +85,11 @@ python test_robustness.py
 ```
 
 **Genera visualizaciones** de cómo cada modelo responde a:
-- ✓ Imágenes oscuras/brillantes
-- ✓ Imágenes con ruido
-- ✓ Imágenes rotadas
-- ✓ Imágenes con blur
-- ✓ Diferentes escalas
+-   Imágenes oscuras/brillantes
+-   Imágenes con ruido
+-   Imágenes rotadas
+-   Imágenes con blur
+-   Diferentes escalas
 
 **Archivos generados**:
 - `robustness_test_hog.png`

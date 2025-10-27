@@ -1,6 +1,0 @@
-names:
-- plate
-nc: 1
-path: /home/rickcontreras/proyectos/car-plate-classifier/data/yolo_dataset
-train: images/train
-val: images/val

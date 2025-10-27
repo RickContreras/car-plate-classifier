@@ -1,210 +1,315 @@
-# 🚗 Clasificador de Placas Vehiculares
+# FC Detection Project
 
-Proyecto de visión por computadora para detección y clasificación de placas vehiculares usando descriptores **HOG** (Histogram of Oriented Gradients) y **BRISK** (Binary Robust Invariant Scalable Keypoints).
+Proyecto profesional para detección de placas vehiculares usando Redes Neuronales Fully Connected con características HOG y BRISK.
 
-## 📋 Características
+## 📋 Descripción
 
-- ✅ Preprocesamiento automático de imágenes
-- ✅ Extracción de características con HOG y BRISK
-- ✅ Múltiples modelos de clasificación (SVM, Random Forest, Redes Neuronales)
-- ✅ Interfaz gráfica intuitiva para predicción
-- ✅ Métricas de evaluación completas (Accuracy, Precision, Recall, F1-Score)
-- ✅ Matrices de confusión y visualizaciones
-- ✅ Manejo de clases balanceadas (muestras positivas y negativas)
+Este proyecto implementa un sistema de detección de bounding boxes usando:
+- **Características HOG** (Histogram of Oriented Gradients)
+- **Características BRISK** (Binary Robust Invariant Scalable Keypoints)
+- **Redes Neuronales Fully Connected** para regresión de coordenadas
 
-## 🛠️ Instalación
+## 🏗️ Estructura del Proyecto
 
-### Requisitos Previos
-- Python 3.8 o superior
-- pip
-- virtualenv (opcional pero recomendado)
-
-### Pasos de Instalación
-
-1. **Clonar el repositorio**
-```bash
-git clone https://github.com/RickContreras/car-plate-classifier.git
-cd car-plate-classifier
+```
+fc-detection-project/
+├── src/
+│   ├── features/           # Extracción de características
+│   │   ├── __init__.py
+│   │   ├── base.py        # Interfaz base
+│   │   ├── hog.py         # Extractor HOG
+│   │   └── brisk.py       # Extractor BRISK
+│   ├── models/            # Arquitecturas de redes neuronales
+│   │   ├── __init__.py
+│   │   ├── fc_network.py  # Redes Fully Connected
+│   │   └── layers.py      # Capas personalizadas
+│   ├── data/              # Pipeline de datos
+│   │   ├── __init__.py
+│   │   ├── dataset.py     # Dataset loaders
+│   │   ├── transforms.py  # Augmentaciones
+│   │   └── utils.py       # Utilidades
+│   ├── training/          # Sistema de entrenamiento
+│   │   ├── __init__.py
+│   │   ├── trainer.py     # Training loops
+│   │   ├── callbacks.py   # Callbacks personalizados
+│   │   └── losses.py      # Funciones de pérdida
+│   └── evaluation/        # Métricas y evaluación
+│       ├── __init__.py
+│       ├── metrics.py     # IoU, MAE, etc.
+│       └── visualize.py   # Visualización de resultados
+├── configs/               # Archivos de configuración
+│   ├── hog_config.yaml
+│   └── brisk_config.yaml
+├── scripts/               # Scripts de utilidad
+│   ├── prepare_dataset.py
+│   ├── train.py
+│   ├── evaluate.py
+│   └── inference.py
+├── tests/                 # Tests unitarios
+│   ├── test_features.py
+│   ├── test_models.py
+│   └── test_data.py
+├── notebooks/             # Jupyter notebooks
+│   └── exploratory_analysis.ipynb
+├── docs/                  # Documentación
+│   └── api.md
+├── requirements.txt
+├── setup.py
+├── .gitignore
+└── README.md
 ```
 
-2. **Crear y activar entorno virtual**
-```bash
-# Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
+## 🚀 Instalación
 
-# Windows
+### 1. Clonar el repositorio
+
+```bash
+git clone <repository-url>
+cd fc-detection-project
+```
+
+### 2. Crear entorno virtual
+
+```bash
 python -m venv venv
-venv\Scripts\activate
+source venv/bin/activate  # Linux/Mac
+# o
+venv\Scripts\activate  # Windows
 ```
 
-3. **Instalar dependencias**
+### 3. Instalar dependencias
+
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Descargar el dataset**
-```bash
-python scripts/download_data.py
-```
-
-## 📂 Estructura del Proyecto
-
-```
-car-plate-classifier/
-├── app/
-│   ├── __init__.py
-│   └── gui.py                 # Interfaz gráfica
-├── config/
-│   └── config.yaml            # Configuración del proyecto
-├── data/
-│   ├── raw/                   # Datos originales
-│   │   ├── images/
-│   │   └── annotations/
-│   └── processed/             # Datos procesados
-├── models/                    # Modelos entrenados
-├── notebooks/                 # Jupyter notebooks
-├── results/                   # Resultados y visualizaciones
-├── scripts/
-│   ├── __init__.py
-│   └── download_data.py       # Script de descarga de datos
-├── src/
-│   ├── __init__.py
-│   ├── preprocessing.py       # Preprocesamiento de imágenes
-│   ├── feature_extraction.py # Extracción de características
-│   └── train_models.py        # Entrenamiento de modelos
-├── tests/
-│   └── __init__.py
-├── main.py                    # Script principal
-├── requirements.txt
-├── kaggle.json               # Credenciales de Kaggle
-└── README.md
-```
-
-## 🚀 Uso
-
-### 1. Entrenamiento de Modelos
-
-Ejecuta el pipeline completo de entrenamiento:
+### 4. Instalar el paquete en modo desarrollo
 
 ```bash
-python main.py
+pip install -e .
 ```
 
-Este script ejecutará:
-1. Preprocesamiento del dataset
-2. Extracción de características (HOG y BRISK)
-3. Entrenamiento de 6 modelos diferentes:
-   - SVM con HOG
-   - SVM con BRISK
-   - Random Forest con HOG
-   - Random Forest con BRISK
-   - Red Neuronal con HOG
-   - Red Neuronal con BRISK
+## 📊 Preparación de Datos
 
-### 2. Interfaz Gráfica
+### Formato de Dataset
 
-Una vez entrenados los modelos, lanza la interfaz gráfica:
+El proyecto espera imágenes con anotaciones en formato Pascal VOC XML:
+
+```xml
+<annotation>
+  <filename>image.jpg</filename>
+  <object>
+    <name>licence</name>
+    <bndbox>
+      <xmin>100</xmin>
+      <ymin>150</ymin>
+      <xmax>300</xmax>
+      <ymax>250</ymax>
+    </bndbox>
+  </object>
+</annotation>
+```
+
+### Preparar Dataset
 
 ```bash
-python app/gui.py
+python scripts/prepare_dataset.py \
+    --images data/raw/images \
+    --annotations data/raw/annotations \
+    --output data/processed \
+    --split 0.8
 ```
 
-**Funcionalidades de la GUI:**
-- Cargar y visualizar imágenes
-- Seleccionar modelo entrenado
-- Clasificar imágenes en tiempo real
-- Ver resultados con nivel de confianza
+## 🎯 Entrenamiento
 
-### 3. Uso Individual de Módulos
+### Entrenar modelo HOG
 
-**Preprocesamiento:**
 ```bash
-python src/preprocessing.py
+python scripts/train.py --config configs/hog_config.yaml
 ```
 
-**Extracción de características:**
+### Entrenar modelo BRISK
+
 ```bash
-python src/feature_extraction.py
+python scripts/train.py --config configs/brisk_config.yaml
 ```
 
-**Entrenamiento:**
+### Entrenar ambos modelos
+
 ```bash
-python src/train_models.py
+python scripts/train.py --config configs/hog_config.yaml
+python scripts/train.py --config configs/brisk_config.yaml
 ```
 
-## ⚙️ Configuración
+### Parámetros personalizados
 
-El archivo `config/config.yaml` permite personalizar:
+```bash
+python scripts/train.py \
+    --feature-type hog \
+    --epochs 100 \
+    --batch-size 32 \
+    --learning-rate 0.001 \
+    --patience 15
+```
+
+## 📈 Evaluación
+
+```bash
+python scripts/evaluate.py \
+    --model models/detection_hog.h5 \
+    --feature-type hog \
+    --data data/processed/test
+```
+
+## 🔮 Inferencia
+
+```bash
+python scripts/inference.py \
+    --model models/detection_hog.h5 \
+    --feature-type hog \
+    --image path/to/image.jpg \
+    --output results/
+```
+
+## 📊 Métricas de Rendimiento
+
+| Modelo | MAE | IoU Promedio | IoU > 0.5 | Parámetros |
+|--------|-----|--------------|-----------|------------|
+| HOG    | 7.45% | 39.55% | 48.3% | 4.3M |
+| BRISK  | 6.89% | 17.20% | 10.3% | 439K |
+
+## 🔧 Configuración
+
+### Archivo de configuración (YAML)
 
 ```yaml
-data:
-  img_size: [128, 128]        # Tamaño de redimensionamiento
-  test_size: 0.2              # Proporción de datos de prueba
-  
-preprocessing:
-  resize: true                # Redimensionar imágenes
-  grayscale: true             # Convertir a escala de grises
-  normalize: true             # Normalizar valores
-  equalize_hist: false        # Ecualización de histograma
-
-features:
-  hog:
+# configs/hog_config.yaml
+feature_extractor:
+  type: hog
+  params:
     orientations: 9
-    pixels_per_cell: [8, 8]
-    cells_per_block: [2, 2]
-  
-  brisk:
-    threshold: 30
-    octaves: 3
-    pattern_scale: 1.0
+    pixels_per_cell: 8
+    cells_per_block: 3
+
+model:
+  architecture:
+    - units: 512
+      activation: relu
+      batch_norm: true
+      dropout: 0.3
+    - units: 256
+      activation: relu
+      batch_norm: true
+      dropout: 0.3
+    - units: 128
+      activation: relu
+      batch_norm: true
+      dropout: 0.2
+    - units: 64
+      activation: relu
+      dropout: 0.2
+    - units: 4
+      activation: sigmoid
+
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: adam
+  loss: mse
+  callbacks:
+    - type: early_stopping
+      patience: 15
+      monitor: val_loss
+    - type: reduce_lr
+      factor: 0.5
+      patience: 7
+    - type: model_checkpoint
+      save_best_only: true
+      monitor: val_avg_iou
 ```
 
-## 📊 Resultados
+## 🧪 Tests
 
-Los modelos generan:
-- **Matrices de confusión** guardadas en `results/`
-- **Historial de entrenamiento** (para redes neuronales)
-- **Métricas de evaluación** en consola
+Ejecutar todos los tests:
 
-Ejemplo de métricas:
-```
-SVM_HOG:
-   • accuracy: 0.9500
-   • precision: 0.9400
-   • recall: 0.9600
-   • f1_score: 0.9500
-```
-
-## 🧪 Testing
-
-Ejecuta los tests con:
 ```bash
-pytest tests/
+pytest tests/ -v
 ```
 
-## 📝 Dataset
+Ejecutar tests específicos:
 
-El proyecto utiliza el dataset de placas vehiculares disponible en Kaggle. Asegúrate de:
-1. Tener una cuenta en Kaggle
-2. Configurar `kaggle.json` con tus credenciales
-3. Ejecutar el script de descarga
+```bash
+pytest tests/test_features.py -v
+pytest tests/test_models.py -v
+```
 
-## 🤝 Contribuidores
+Con cobertura:
 
-- [Ricardo Contreras Garzón](https://github.com/RickContreras)
-- [Maria Cristina Vergara](https://github.com/cristinavergara1)
-- [Santiago Graciano](https://github.com/santiagogracianod)
+```bash
+pytest tests/ --cov=src --cov-report=html
+```
 
-## 📄 Licencia
+## 📚 API Reference
 
-Este proyecto está bajo la licencia MIT.
+### Feature Extractors
 
-## 🙏 Agradecimientos
+```python
+from src.features import HOGFeatureExtractor, BRISKFeatureExtractor
 
-- Dataset de placas vehiculares de Kaggle
-- Librerías: OpenCV, scikit-learn, scikit-image, TensorFlow
+# HOG
+hog = HOGFeatureExtractor(orientations=9, pixels_per_cell=8)
+features = hog.extract(image)
 
----
+# BRISK
+brisk = BRISKFeatureExtractor(n_keypoints=512)
+features = brisk.extract(image)
+```
 
-**¿Necesitas ayuda?** Abre un issue en el repositorio.
+### Models
+
+```python
+from src.models import FCNetwork
+
+model = FCNetwork(
+    input_dim=8100,
+    architecture=[512, 256, 128, 64, 4],
+    activations=['relu', 'relu', 'relu', 'relu', 'sigmoid']
+)
+model.compile(optimizer='adam', loss='mse')
+```
+
+### Training
+
+```python
+from src.training import Trainer
+
+trainer = Trainer(model, config)
+history = trainer.train(train_data, val_data)
+```
+
+## 🎨 Visualización
+
+```python
+from src.evaluation import visualize_predictions
+
+visualize_predictions(
+    model=model,
+    images=test_images,
+    ground_truth=test_boxes,
+    save_path='results/predictions.png'
+)
+```
+
+## 🤝 Contribuciones
+
+1. Fork del proyecto
+2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit de cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir un Pull Request
+
+## 📖 Referencias
+
+- Dalal, N., & Triggs, B. (2005). Histograms of oriented gradients for human detection.
+- Leutenegger, S., Chli, M., & Siegwart, R. Y. (2011). BRISK: Binary robust invariant scalable keypoints.

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Script to train detection models.
+Script para entrenar modelos de detección.
 
-Trains a fully connected neural network for bounding box regression.
+Entrena una red neuronal completamente conectada para regresión de bounding box.
 """
 
 import argparse
@@ -13,10 +13,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-# Disable GPU to avoid CUDA errors
+# Desactivar GPU para evitar errores de CUDA
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
-# Add parent directory to path
+# Agregar directorio padre al path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.data import load_dataset
@@ -27,28 +27,28 @@ from src.evaluation import MetricsCalculator
 
 
 def load_config(config_path: str) -> dict:
-    """Load configuration from YAML file."""
+    """Cargar configuración desde archivo YAML."""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     return config
 
 
 def plot_training_history(history, save_path: str):
-    """Plot and save training history."""
+    """Graficar y guardar historial de entrenamiento."""
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     
-    # Plot loss
-    axes[0].plot(history.history['loss'], label='Train Loss', linewidth=2)
-    axes[0].plot(history.history['val_loss'], label='Val Loss', linewidth=2)
-    axes[0].set_xlabel('Epoch', fontsize=12)
-    axes[0].set_ylabel('Loss', fontsize=12)
-    axes[0].set_title('Training and Validation Loss', fontsize=14, fontweight='bold')
+    # Graficar pérdida
+    axes[0].plot(history.history['loss'], label='Pérdida Entrenamiento', linewidth=2)
+    axes[0].plot(history.history['val_loss'], label='Pérdida Validación', linewidth=2)
+    axes[0].set_xlabel('Época', fontsize=12)
+    axes[0].set_ylabel('Pérdida', fontsize=12)
+    axes[0].set_title('Pérdida de Entrenamiento y Validación', fontsize=14, fontweight='bold')
     axes[0].legend(fontsize=10)
     axes[0].grid(True, alpha=0.3)
     
-    # Plot MAE
-    axes[1].plot(history.history['mae'], label='Train MAE', linewidth=2)
-    axes[1].plot(history.history['val_mae'], label='Val MAE', linewidth=2)
+    # Graficar MAE
+    axes[1].plot(history.history['mae'], label='MAE Entrenamiento', linewidth=2)
+    axes[1].plot(history.history['val_mae'], label='MAE Validación', linewidth=2)
     axes[1].set_xlabel('Epoch', fontsize=12)
     axes[1].set_ylabel('MAE', fontsize=12)
     axes[1].set_title('Training and Validation MAE', fontsize=14, fontweight='bold')

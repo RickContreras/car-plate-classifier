@@ -1,5 +1,5 @@
 """
-Dataset utilities and loaders for detection.
+Utilidades de dataset y cargadores para detección.
 """
 
 import numpy as np
@@ -12,25 +12,25 @@ import pickle
 
 def normalize_bbox(bbox: Tuple[int, int, int, int], img_width: int, img_height: int) -> Tuple[float, float, float, float]:
     """
-    Normalize bounding box coordinates to [0, 1].
+    Normalizar coordenadas de bounding box a [0, 1].
     
     Args:
-        bbox: (xmin, ymin, xmax, ymax) in pixels
-        img_width: Image width
-        img_height: Image height
+        bbox: (xmin, ymin, xmax, ymax) en píxeles
+        img_width: Ancho de imagen
+        img_height: Alto de imagen
         
     Returns:
-        (x_center, y_center, width, height) normalized to [0, 1]
+        (x_center, y_center, width, height) normalizado a [0, 1]
     """
     xmin, ymin, xmax, ymax = bbox
     
-    # Convert to center format
+    # Convertir a formato centro
     x_center = (xmin + xmax) / 2.0
     y_center = (ymin + ymax) / 2.0
     width = xmax - xmin
     height = ymax - ymin
     
-    # Normalize
+    # Normalizar
     x_center /= img_width
     y_center /= img_height
     width /= img_width
@@ -41,31 +41,31 @@ def normalize_bbox(bbox: Tuple[int, int, int, int], img_width: int, img_height: 
 
 def denormalize_bbox(norm_bbox: Tuple[float, float, float, float], img_width: int, img_height: int) -> Tuple[int, int, int, int]:
     """
-    Denormalize bounding box coordinates from [0, 1] to pixels.
+    Desnormalizar coordenadas de bounding box de [0, 1] a píxeles.
     
     Args:
-        norm_bbox: (x_center, y_center, width, height) normalized
-        img_width: Image width
-        img_height: Image height
+        norm_bbox: (x_center, y_center, width, height) normalizado
+        img_width: Ancho de imagen
+        img_height: Alto de imagen
         
     Returns:
-        (xmin, ymin, xmax, ymax) in pixels
+        (xmin, ymin, xmax, ymax) en píxeles
     """
     x_center, y_center, width, height = norm_bbox
     
-    # Denormalize
+    # Desnormalizar
     x_center *= img_width
     y_center *= img_height
     width *= img_width
     height *= img_height
     
-    # Convert to corner format
+    # Convertir a formato de esquinas
     xmin = int(x_center - width / 2)
     ymin = int(y_center - height / 2)
     xmax = int(x_center + width / 2)
     ymax = int(y_center + height / 2)
     
-    # Clip to image bounds
+    # Recortar a límites de imagen
     xmin = max(0, min(xmin, img_width - 1))
     ymin = max(0, min(ymin, img_height - 1))
     xmax = max(0, min(xmax, img_width - 1))
@@ -76,13 +76,13 @@ def denormalize_bbox(norm_bbox: Tuple[float, float, float, float], img_width: in
 
 def parse_pascal_voc(xml_path: str) -> Tuple[str, List[Tuple[int, int, int, int]]]:
     """
-    Parse Pascal VOC XML annotation file.
+    Parsear archivo de anotación XML Pascal VOC.
     
     Args:
-        xml_path: Path to XML file
+        xml_path: Ruta al archivo XML
         
     Returns:
-        Tuple of (filename, list of bboxes)
+        Tupla de (filename, lista de bboxes)
     """
     tree = ET.parse(xml_path)
     root = tree.getroot()
@@ -102,7 +102,7 @@ def parse_pascal_voc(xml_path: str) -> Tuple[str, List[Tuple[int, int, int, int]
 
 
 class DetectionDataset:
-    """Dataset class for detection with feature extraction."""
+    """Clase de dataset para detección con extracción de características."""
     
     def __init__(
         self,
@@ -111,15 +111,15 @@ class DetectionDataset:
         image_paths: Optional[List[str]] = None
     ):
         """
-        Initialize detection dataset.
+        Inicializar dataset de detección.
         
         Args:
-            features: Array of shape (n_samples, feature_dim)
-            bboxes: Array of shape (n_samples, 4) - normalized coordinates
-            image_paths: Optional list of image paths
+            features: Array de forma (n_samples, feature_dim)
+            bboxes: Array de forma (n_samples, 4) - coordenadas normalizadas
+            image_paths: Lista opcional de rutas de imágenes
         """
-        assert len(features) == len(bboxes), "Features and bboxes must have same length"
-        assert bboxes.shape[1] == 4, "Bboxes must have shape (n_samples, 4)"
+        assert len(features) == len(bboxes), "Features y bboxes deben tener la misma longitud"
+        assert bboxes.shape[1] == 4, "Bboxes debe tener forma (n_samples, 4)"
         
         self.features = features
         self.bboxes = bboxes
@@ -127,28 +127,28 @@ class DetectionDataset:
         self.n_samples = len(features)
     
     def __len__(self) -> int:
-        """Get dataset size."""
+        """Obtener tamaño del dataset."""
         return self.n_samples
     
     def __getitem__(self, idx: int) -> Tuple[np.ndarray, np.ndarray]:
-        """Get a single sample."""
+        """Obtener una muestra individual."""
         return self.features[idx], self.bboxes[idx]
     
     def get_batch(self, indices: List[int]) -> Tuple[np.ndarray, np.ndarray]:
-        """Get a batch of samples."""
+        """Obtener un batch de muestras."""
         return self.features[indices], self.bboxes[indices]
     
     def split(self, train_ratio: float = 0.8, shuffle: bool = True, seed: Optional[int] = None) -> Tuple['DetectionDataset', 'DetectionDataset']:
         """
-        Split dataset into train and validation sets.
+        Dividir dataset en conjuntos de entrenamiento y validación.
         
         Args:
-            train_ratio: Ratio of training samples
-            shuffle: Whether to shuffle before splitting
-            seed: Random seed
+            train_ratio: Proporción de muestras de entrenamiento
+            shuffle: Si se debe mezclar antes de dividir
+            seed: Semilla aleatoria
             
         Returns:
-            Tuple of (train_dataset, val_dataset)
+            Tupla de (train_dataset, val_dataset)
         """
         if seed is not None:
             np.random.seed(seed)
@@ -179,7 +179,7 @@ class DetectionDataset:
         return train_dataset, val_dataset
     
     def save(self, filepath: str):
-        """Save dataset to pickle file."""
+        """Guardar dataset a archivo pickle."""
         data = {
             'features': self.features,
             'bboxes': self.bboxes,
@@ -190,7 +190,7 @@ class DetectionDataset:
     
     @staticmethod
     def load(filepath: str) -> 'DetectionDataset':
-        """Load dataset from pickle file."""
+        """Cargar dataset desde archivo pickle."""
         with open(filepath, 'rb') as f:
             data = pickle.load(f)
         
@@ -203,12 +203,12 @@ class DetectionDataset:
 
 def load_dataset(filepath: str) -> DetectionDataset:
     """
-    Load dataset from file.
+    Cargar dataset desde archivo.
     
     Args:
-        filepath: Path to dataset file (.pkl)
+        filepath: Ruta al archivo de dataset (.pkl)
         
     Returns:
-        DetectionDataset instance
+        Instancia de DetectionDataset
     """
     return DetectionDataset.load(filepath)

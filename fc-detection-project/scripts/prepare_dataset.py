@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Script to prepare dataset for detection training.
+Script para preparar el dataset para entrenamiento de detección.
 
-Extracts features (HOG or BRISK) from images and saves them with bounding box labels.
+Extrae características (HOG o BRISK) de las imágenes y las guarda con las etiquetas de bounding box.
 """
 
 import argparse
@@ -21,7 +21,7 @@ from src.data.utils import parse_pascal_voc, normalize_bbox, DetectionDataset
 
 
 def load_config(config_path: str) -> dict:
-    """Load configuration from YAML file."""
+    """Carga configuración desde archivo YAML."""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     return config
@@ -35,19 +35,19 @@ def prepare_dataset(
     output_path: str
 ):
     """
-    Prepare dataset with features and labels.
+    Prepara el dataset con características y etiquetas.
     
     Args:
-        images_dir: Directory with images
-        annotations_dir: Directory with XML annotations
-        feature_type: 'hog' or 'brisk'
-        config: Configuration dictionary
-        output_path: Path to save processed dataset
+        images_dir: Directorio con imágenes
+        annotations_dir: Directorio con anotaciones XML
+        feature_type: 'hog' o 'brisk'
+        config: Diccionario de configuración
+        output_path: Ruta para guardar el dataset procesado
     """
     images_path = Path(images_dir)
     annotations_path = Path(annotations_dir)
     
-    # Initialize feature extractor
+    # Inicializar extractor de características
     feature_params = config['feature_extractor']['params']
     
     if feature_type == 'hog':
@@ -66,129 +66,129 @@ def prepare_dataset(
     print(f"Annotations directory: {annotations_dir}")
     print(f"{'='*60}\n")
     
-    # Get all XML files
+    # Obtener todos los archivos XML
     xml_files = list(annotations_path.glob('*.xml'))
     
     if len(xml_files) == 0:
-        print(f"ERROR: No XML files found in {annotations_dir}")
+        print(f"ERROR: No se encontraron archivos XML en {annotations_dir}")
         return
     
-    print(f"Found {len(xml_files)} annotation files")
+    print(f"Se encontraron {len(xml_files)} archivos de anotaciones")
     
     features_list = []
     bboxes_list = []
     image_paths_list = []
     skipped = 0
     
-    # Process each annotation
-    for xml_file in tqdm(xml_files, desc="Processing images"):
+    # Procesar cada anotación
+    for xml_file in tqdm(xml_files, desc="Procesando imágenes"):
         try:
-            # Parse XML
+            # Parsear XML
             filename, bboxes = parse_pascal_voc(str(xml_file))
             
-            # Skip if no bboxes
+            # Saltar si no hay bboxes
             if len(bboxes) == 0:
                 skipped += 1
                 continue
             
-            # Load image
+            # Cargar imagen
             image_path = images_path / filename
             if not image_path.exists():
-                # Try with different extension
+                # Intentar con extensión diferente
                 image_path = images_path / (Path(filename).stem + '.jpg')
                 if not image_path.exists():
                     image_path = images_path / (Path(filename).stem + '.png')
             
             if not image_path.exists():
-                print(f"Warning: Image not found: {filename}")
+                print(f"Advertencia: Imagen no encontrada: {filename}")
                 skipped += 1
                 continue
             
             image = cv2.imread(str(image_path))
             if image is None:
-                print(f"Warning: Failed to load image: {filename}")
+                print(f"Advertencia: Error al cargar imagen: {filename}")
                 skipped += 1
                 continue
             
             height, width = image.shape[:2]
             
-            # Extract features
+            # Extraer características
             features = extractor.extract(image)
             
-            # Process each bbox (use only the first one for single object detection)
+            # Procesar cada bbox (usar solo el primero para detección de un solo objeto)
             bbox = bboxes[0]
             normalized_bbox = normalize_bbox(bbox, width, height)
             
-            # Add to lists
+            # Agregar a listas
             features_list.append(features)
             bboxes_list.append(normalized_bbox)
             image_paths_list.append(str(image_path))
             
         except Exception as e:
-            print(f"Error processing {xml_file.name}: {e}")
+            print(f"Error procesando {xml_file.name}: {e}")
             skipped += 1
             continue
     
-    print(f"\nProcessed {len(features_list)} samples")
-    print(f"Skipped {skipped} files")
+    print(f"\nProcesadas {len(features_list)} muestras")
+    print(f"Omitidas {skipped} archivos")
     
     if len(features_list) == 0:
-        print("ERROR: No samples processed")
+        print("ERROR: No se procesaron muestras")
         return
     
-    # Convert to numpy arrays
+    # Convertir a arrays numpy
     features_array = np.array(features_list)
     bboxes_array = np.array(bboxes_list)
     
-    print(f"\nFeatures shape: {features_array.shape}")
-    print(f"Bboxes shape: {bboxes_array.shape}")
+    print(f"\nForma de características: {features_array.shape}")
+    print(f"Forma de bboxes: {bboxes_array.shape}")
     
-    # Create dataset
+    # Crear dataset
     dataset = DetectionDataset(
         features=features_array,
         bboxes=bboxes_array,
         image_paths=image_paths_list
     )
     
-    # Save dataset
+    # Guardar dataset
     output_file = Path(output_path)
     output_file.parent.mkdir(parents=True, exist_ok=True)
     dataset.save(str(output_file))
     
-    print(f"\n✓ Dataset saved to: {output_path}")
+    print(f"\n✓ Dataset guardado en: {output_path}")
     print(f"{'='*60}\n")
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Prepare detection dataset')
-    parser.add_argument('--images', type=str, required=True, help='Images directory')
-    parser.add_argument('--annotations', type=str, required=True, help='Annotations directory')
-    parser.add_argument('--feature-type', type=str, required=True, choices=['hog', 'brisk'], help='Feature type')
-    parser.add_argument('--config', type=str, help='Config file path')
-    parser.add_argument('--output', type=str, help='Output file path')
+    parser = argparse.ArgumentParser(description='Preparar dataset de detección')
+    parser.add_argument('--images', type=str, required=True, help='Directorio de imágenes')
+    parser.add_argument('--annotations', type=str, required=True, help='Directorio de anotaciones')
+    parser.add_argument('--feature-type', type=str, required=True, choices=['hog', 'brisk'], help='Tipo de características')
+    parser.add_argument('--config', type=str, help='Ruta del archivo de configuración')
+    parser.add_argument('--output', type=str, help='Ruta del archivo de salida')
     
     args = parser.parse_args()
     
-    # Load config
+    # Cargar configuración
     if args.config:
         config = load_config(args.config)
     else:
-        # Use default config
+        # Usar configuración por defecto
         config_file = f"configs/{args.feature_type}_config.yaml"
         if Path(config_file).exists():
             config = load_config(config_file)
         else:
-            print(f"ERROR: Config file not found: {config_file}")
-            print("Please provide --config or create default config file")
+            print(f"ERROR: Archivo de configuración no encontrado: {config_file}")
+            print("Por favor proporciona --config o crea el archivo de configuración por defecto")
             return
     
-    # Set output path
+    # Establecer ruta de salida
     if args.output:
         output_path = args.output
     else:
         output_path = f"data/processed/detection_{args.feature_type}.pkl"
     
-    # Prepare dataset
+    # Preparar dataset
     prepare_dataset(
         images_dir=args.images,
         annotations_dir=args.annotations,

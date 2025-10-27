@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to perform inference with trained detection models.
+Script para realizar inferencia con modelos de detección entrenados.
 """
 
 import argparse
@@ -11,10 +11,10 @@ import cv2
 import numpy as np
 import os
 
-# Disable GPU
+# Desactivar GPU
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
-# Add parent directory to path
+# Agregar directorio padre al path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tensorflow import keras
@@ -23,7 +23,7 @@ from src.data.utils import denormalize_bbox
 
 
 def load_config(config_path: str) -> dict:
-    """Load configuration from YAML file."""
+    """Cargar configuración desde archivo YAML."""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     return config
@@ -38,26 +38,26 @@ def perform_inference(
     show: bool = False
 ):
     """
-    Perform inference on a single image.
+    Realizar inferencia en una sola imagen.
     
     Args:
-        model_path: Path to trained model
-        image_path: Path to input image
-        feature_type: 'hog' or 'brisk'
-        config: Configuration dictionary
-        output_path: Path to save result image
-        show: Whether to display result
+        model_path: Ruta al modelo entrenado
+        image_path: Ruta a la imagen de entrada
+        feature_type: 'hog' o 'brisk'
+        config: Diccionario de configuración
+        output_path: Ruta para guardar imagen resultado
+        show: Si se debe mostrar el resultado
     """
     print(f"\n{'='*60}")
-    print(f"Inference with {feature_type.upper()} Model")
+    print(f"Inferencia con Modelo {feature_type.upper()}")
     print(f"{'='*60}\n")
     
-    # Load model
-    print(f"Loading model: {model_path}")
+    # Cargar modelo
+    print(f"Cargando modelo: {model_path}")
     model = keras.models.load_model(model_path, compile=False)
-    print("✓ Model loaded")
+    print("✓ Modelo cargado")
     
-    # Initialize feature extractor
+    # Inicializar extractor de características
     feature_params = config['feature_extractor']['params']
     
     if feature_type == 'hog':
@@ -67,40 +67,40 @@ def perform_inference(
     else:
         raise ValueError(f"Unknown feature type: {feature_type}")
     
-    print(f"✓ Feature extractor initialized: {extractor}")
+    print(f"✓ Extractor de características inicializado: {extractor}")
     
-    # Load image
-    print(f"\nLoading image: {image_path}")
+    # Cargar imagen
+    print(f"\nCargando imagen: {image_path}")
     image = cv2.imread(image_path)
     
     if image is None:
-        print(f"ERROR: Failed to load image: {image_path}")
+        print(f"ERROR: No se pudo cargar la imagen: {image_path}")
         return
     
     height, width = image.shape[:2]
-    print(f"✓ Image loaded: {width}x{height}")
+    print(f"✓ Imagen cargada: {width}x{height}")
     
-    # Extract features
-    print("\nExtracting features...")
+    # Extraer características
+    print("\nExtrayendo características...")
     features = extractor.extract(image)
-    features = np.expand_dims(features, axis=0)  # Add batch dimension
-    print(f"✓ Features extracted: {features.shape}")
+    features = np.expand_dims(features, axis=0)  # Agregar dimensión de batch
+    print(f"✓ Características extraídas: {features.shape}")
     
-    # Predict bounding box
-    print("\nPredicting bounding box...")
+    # Predecir bounding box
+    print("\nPrediciendo bounding box...")
     pred_bbox_norm = model.predict(features, verbose=0)[0]
-    print(f"✓ Normalized bbox: [{pred_bbox_norm[0]:.3f}, {pred_bbox_norm[1]:.3f}, {pred_bbox_norm[2]:.3f}, {pred_bbox_norm[3]:.3f}]")
+    print(f"✓ Bbox normalizado: [{pred_bbox_norm[0]:.3f}, {pred_bbox_norm[1]:.3f}, {pred_bbox_norm[2]:.3f}, {pred_bbox_norm[3]:.3f}]")
     
-    # Denormalize bbox
+    # Desnormalizar bbox
     pred_bbox = denormalize_bbox(pred_bbox_norm, width, height)
     xmin, ymin, xmax, ymax = pred_bbox
-    print(f"✓ Pixel bbox: ({xmin}, {ymin}, {xmax}, {ymax})")
+    print(f"✓ Bbox en píxeles: ({xmin}, {ymin}, {xmax}, {ymax})")
     
-    # Draw bounding box
+    # Dibujar bounding box
     result_image = image.copy()
     cv2.rectangle(result_image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
     
-    # Add label
+    # Agregar etiqueta
     label = f"{feature_type.upper()}"
     label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
     cv2.rectangle(
@@ -120,33 +120,33 @@ def perform_inference(
         2
     )
     
-    # Save result
+    # Guardar resultado
     if output_path:
         cv2.imwrite(output_path, result_image)
-        print(f"\n✓ Result saved to: {output_path}")
+        print(f"\n✓ Resultado guardado en: {output_path}")
     
-    # Show result
+    # Mostrar resultado
     if show:
-        cv2.imshow('Detection Result', result_image)
-        print("\nPress any key to close...")
+        cv2.imshow('Resultado de Detección', result_image)
+        print("\nPresiona cualquier tecla para cerrar...")
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     
     print(f"\n{'='*60}")
-    print("Inference completed!")
+    print("¡Inferencia completada!")
     print(f"{'='*60}\n")
     
     return result_image, pred_bbox
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Perform inference with detection model')
-    parser.add_argument('--model', type=str, required=True, help='Model file path')
-    parser.add_argument('--image', type=str, required=True, help='Input image path')
-    parser.add_argument('--feature-type', type=str, required=True, choices=['hog', 'brisk'], help='Feature type')
-    parser.add_argument('--config', type=str, help='Config file path')
-    parser.add_argument('--output', type=str, help='Output image path')
-    parser.add_argument('--show', action='store_true', help='Display result')
+    parser = argparse.ArgumentParser(description='Realizar inferencia con modelo de detección')
+    parser.add_argument('--model', type=str, required=True, help='Ruta del archivo de modelo')
+    parser.add_argument('--image', type=str, required=True, help='Ruta de la imagen de entrada')
+    parser.add_argument('--feature-type', type=str, required=True, choices=['hog', 'brisk'], help='Tipo de características')
+    parser.add_argument('--config', type=str, help='Ruta del archivo de configuración')
+    parser.add_argument('--output', type=str, help='Ruta de la imagen de salida')
+    parser.add_argument('--show', action='store_true', help='Mostrar resultado')
     
     args = parser.parse_args()
     

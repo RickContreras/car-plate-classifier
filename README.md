@@ -1,4 +1,4 @@
-# FC Detection Project
+# Car Plate Classifier / Clasificador de Matrículas
 
 Proyecto profesional para detección de placas vehiculares usando Redes Neuronales Fully Connected con características HOG y BRISK.
 
@@ -64,8 +64,8 @@ fc-detection-project/
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <repository-url>
-cd fc-detection-project
+git clone https://github.com/RickContreras/car-plate-classifier.git
+cd car-plate-classifier
 ```
 
 ### 2. Crear entorno virtual

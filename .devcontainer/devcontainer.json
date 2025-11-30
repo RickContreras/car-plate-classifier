@@ -1,0 +1,29 @@
+{
+    "name": "Modelos1 Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-toolsai.jupyter",
+                "GitHub.copilot",
+                "ms-toolsai.jupyter-keymap",
+                "ms-toolsai.jupyter-renderers",
+                "ms-toolsai.vscode-jupyter-cell-tags",
+                "ms-toolsai.vscode-jupyter-slideshow"
+            ]
+        }
+    },
+    "postCreateCommand": "pip install -r requirements.txt",
+    "remoteUser": "root",
+    "mounts": [
+        "source=/var/lib/docker/codespacemount/workspace/Modelos1,target=/workspace,type=bind",
+        "source=/.codespaces/agent/mount/cache,target=/vscode,type=bind"
+    ]
+}

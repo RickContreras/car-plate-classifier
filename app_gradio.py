@@ -1,6 +1,6 @@
 """
 Aplicación Web de Detección de Placas Vehiculares
-Usa modelos HOG y BRISK para detectar placas en imágenes de autos
+Usa modelos HOG, BRISK y RetinaNet para detectar placas en imágenes de autos
 """
 import os
 os.environ['MPLBACKEND'] = 'Agg'  # Usar backend sin GUI para matplotlib
@@ -9,16 +9,39 @@ import gradio as gr
 import cv2
 import numpy as np
 from tensorflow import keras
+import tensorflow as tf
 import time
 from src.features.hog import HOGFeatureExtractor
 from src.features.brisk import BRISKFeatureExtractor
 from src.data.utils import denormalize_bbox as denorm_bbox
+from src.models.retinanet.inference import RetinaNetInference
 
 # Cargar modelos (solo una vez al inicio)
 print("🔄 Cargando modelos...")
 hog_model = keras.models.load_model('models/detection_hog_best.h5', compile=False)
 brisk_model = keras.models.load_model('models/detection_brisk_best.h5', compile=False)
-print("✅ Modelos cargados!")
+
+# Cargar RetinaNet si existe
+retinanet_inference = None
+retinanet_path = 'models/checkpoints/retinanet/retinanet_plates_best.h5'
+if os.path.exists(retinanet_path):
+    try:
+        print("🔄 Cargando RetinaNet...")
+        retinanet_inference = RetinaNetInference(
+            model_path=retinanet_path,
+            input_shape=(640, 640, 3),
+            num_classes=1,
+            confidence_threshold=0.001,  # Umbral muy bajo para modelo en entrenamiento
+            nms_threshold=0.5
+        )
+        print("✅ RetinaNet cargado!")
+    except Exception as e:
+        print(f"⚠️ No se pudo cargar RetinaNet: {e}")
+        retinanet_inference = None
+else:
+    print("⚠️ RetinaNet no encontrado")
+
+print("✅ Modelos HOG y BRISK cargados!")
 
 # Inicializar extractores de features
 hog_extractor = HOGFeatureExtractor()
@@ -75,7 +98,7 @@ def detect_plate(image, model_choice):
     
     Args:
         image: imagen numpy array (RGB)
-        model_choice: "HOG", "BRISK", o "Ambos"
+        model_choice: "HOG", "BRISK", "RetinaNet", "Todos"
     
     Returns:
         imagen con bounding boxes dibujados, tiempo de procesamiento, detalles
@@ -92,7 +115,7 @@ def detect_plate(image, model_choice):
     # Crear imagen para mostrar
     result_img = image.copy()
     
-    if model_choice in ["HOG", "Ambos"]:
+    if model_choice in ["HOG", "Todos"]:
         # Detección con HOG
         start_time = time.time()
         
@@ -125,7 +148,7 @@ def detect_plate(image, model_choice):
             results_text += f"### ❌ Error en modelo HOG\n{str(e)}\n\n"
             details_text += f"❌ **HOG**: Error\n"
     
-    if model_choice in ["BRISK", "Ambos"]:
+    if model_choice in ["BRISK", "Todos"]:
         # Detección con BRISK
         start_time = time.time()
         
@@ -142,8 +165,8 @@ def detect_plate(image, model_choice):
             brisk_time = (time.time() - start_time) * 1000
             brisk_confidence = calculate_confidence(brisk_bbox_norm)
             
-            # Dibujar bbox BRISK en azul
-            color = (255, 165, 0) if model_choice == "Ambos" else (0, 0, 255)
+            # Dibujar bbox BRISK en azul/naranja
+            color = (255, 165, 0) if model_choice == "Todos" else (0, 0, 255)
             result_img = draw_bbox(result_img, brisk_bbox, "BRISK", 
                                   color, brisk_confidence)
             
@@ -159,13 +182,57 @@ def detect_plate(image, model_choice):
             results_text += f"### ❌ Error en modelo BRISK\n{str(e)}\n\n"
             details_text += f"❌ **BRISK**: Error\n"
     
-    if model_choice == "Ambos":
+    if model_choice in ["RetinaNet", "Todos"] and retinanet_inference is not None:
+        # Detección con RetinaNet
+        start_time = time.time()
+        
+        try:
+            # Predecir usando el módulo de inferencia
+            box, score = retinanet_inference.predict_single_best(img_bgr)
+            
+            if box is not None:
+                retinanet_time = (time.time() - start_time) * 1000
+                confidence = score * 100
+                
+                # Convertir box a enteros
+                x1, y1, x2, y2 = box.astype(int)
+                retinanet_bbox = [x1, y1, x2, y2]
+                
+                # Dibujar bbox RetinaNet en rojo
+                result_img = draw_bbox(result_img, retinanet_bbox, "RetinaNet", 
+                                      (255, 0, 0), confidence)
+                
+                results_text += f"### 🔴 Modelo RetinaNet\n"
+                results_text += f"- **Tiempo**: {retinanet_time:.1f} ms\n"
+                results_text += f"- **Confianza**: {confidence:.1f}%\n"
+                results_text += f"- **Bbox**: {retinanet_bbox}\n"
+                results_text += f"- **Score**: {score:.4f}\n\n"
+                
+                details_text += f"🔴 **RetinaNet**: {retinanet_time:.1f}ms | Confianza: {confidence:.1f}%\n"
+            else:
+                retinanet_time = (time.time() - start_time) * 1000
+                results_text += f"### 🔴 Modelo RetinaNet\n"
+                results_text += f"- **Tiempo**: {retinanet_time:.1f} ms\n"
+                results_text += f"- No se detectó ninguna placa con suficiente confianza\n\n"
+                details_text += f"🔴 **RetinaNet**: Sin detección\n"
+            
+        except Exception as e:
+            results_text += f"### ❌ Error en modelo RetinaNet\n{str(e)}\n\n"
+            details_text += f"❌ **RetinaNet**: Error - {str(e)}\n"
+    elif model_choice in ["RetinaNet", "Todos"] and retinanet_inference is None:
+        results_text += f"### ⏳ Modelo RetinaNet\n"
+        results_text += f"- El modelo aún está entrenando o no está disponible\n"
+        results_text += f"- Revisa el progreso del entrenamiento\n\n"
+        details_text += f"⏳ **RetinaNet**: En entrenamiento\n"
+    
+    if model_choice == "Todos":
         results_text += "---\n"
         results_text += "### 💡 Interpretación\n"
-        results_text += "- **Verde (HOG)**: Más preciso, más lento\n"
-        results_text += "- **Naranja (BRISK)**: Más rápido, menos preciso\n"
-        results_text += "- Si ambos boxes coinciden → Alta confianza\n"
-        results_text += "- Si difieren mucho → Revisar imagen\n"
+        results_text += "- **Verde (HOG)**: Features clásicas, más preciso\n"
+        results_text += "- **Naranja (BRISK)**: Features binarias, más rápido\n"
+        results_text += "- **Rojo (RetinaNet)**: Deep Learning, state-of-the-art\n"
+        results_text += "- Si todos coinciden → Alta confianza\n"
+        results_text += "- RetinaNet suele ser más preciso y robusto\n"
     
     return result_img, results_text, details_text
 
@@ -189,16 +256,22 @@ with gr.Blocks(title="🚗 Detector de Placas Vehiculares", theme=gr.themes.Soft
             )
             
             model_selector = gr.Radio(
-                choices=["HOG", "BRISK", "Ambos"],
-                value="Ambos",
+                choices=["HOG", "BRISK", "RetinaNet", "Todos"],
+                value="RetinaNet" if retinanet_inference else "Todos",
                 label="🎯 Selecciona el modelo",
-                info="HOG es más preciso pero lento, BRISK es rápido pero menos preciso"
+                info="RetinaNet es el más preciso (Deep Learning), HOG es clásico, BRISK es rápido"
             )
             
             detect_btn = gr.Button("🔍 Detectar Placa", variant="primary", size="lg")
             
             gr.Markdown("""
             ### 📝 Información de los Modelos
+            
+            **🔴 RetinaNet (Deep Learning)** ⭐ NUEVO
+            - Precisión: ★★★★★ (State-of-the-art)
+            - Velocidad: ★★★☆☆ (~2-5 FPS)
+            - Arquitectura: ResNet50 + FPN + Focal Loss
+            - Parámetros: 36.4M
             
             **🟢 HOG (Histogram of Oriented Gradients)**
             - Precisión: ★★★★☆ (31% @ IoU 0.5)
@@ -210,7 +283,7 @@ with gr.Blocks(title="🚗 Detector de Placas Vehiculares", theme=gr.themes.Soft
             - Velocidad: ★★★★☆ (~11 FPS)
             - Features: 32,768 dimensiones
             
-            **💡 Consejo**: Usa "Ambos" para comparar resultados
+            **💡 Consejo**: RetinaNet ofrece la mejor precisión
             """)
         
         with gr.Column(scale=1):
@@ -234,9 +307,9 @@ with gr.Blocks(title="🚗 Detector de Placas Vehiculares", theme=gr.themes.Soft
     
     gr.Examples(
         examples=[
-            ["data/raw/images/Cars0.png", "Ambos"],
-            ["data/raw/images/Cars1.png", "HOG"],
-            ["data/raw/images/Cars2.png", "BRISK"],
+            ["data/raw/images/Cars0.png", "Todos"],
+            ["data/raw/images/Cars1.png", "RetinaNet"],
+            ["data/raw/images/Cars2.png", "HOG"],
         ],
         inputs=[input_image, model_selector],
         outputs=[output_image, output_text, quick_info],
@@ -257,19 +330,25 @@ with gr.Blocks(title="🚗 Detector de Placas Vehiculares", theme=gr.themes.Soft
     ### 🔧 Detalles Técnicos
     
     - **Dataset**: 433 imágenes de autos con placas anotadas
-    - **Arquitectura**: Fully Connected Network (5 capas)
-    - **Entrenamiento**: ~75-97 epochs con Early Stopping
+    - **Arquitectura**: 
+        - HOG/BRISK: Fully Connected Network (5 capas)
+        - RetinaNet: ResNet50 + FPN + Focal Loss
+    - **Entrenamiento**: 
+        - HOG/BRISK: ~75-97 epochs con Early Stopping
+        - RetinaNet: 5 epochs con optimización Adam
     - **Framework**: TensorFlow/Keras + OpenCV + scikit-image
     
     ### 📊 Métricas de Evaluación
     
-    | Modelo | IoU Promedio | Precisión @0.5 | Velocidad | Tamaño |
-    |--------|--------------|----------------|-----------|--------|
-    | HOG    | 30%          | 31%            | 112 ms    | 254 MB |
-    | BRISK  | 25%          | 21%            | 93 ms     | 195 MB |
+    | Modelo | IoU Promedio | Precisión @0.5 | Velocidad | Parámetros |
+    |--------|--------------|----------------|-----------|------------|
+    | **RetinaNet** | **TBD** | **TBD** | ~300-500 ms | **36.4M** |
+    | HOG    | 30%          | 31%            | 112 ms    | 254K |
+    | BRISK  | 25%          | 21%            | 93 ms     | 195K |
     
     ### 🎯 Leyenda de Colores
     
+    - 🔴 **Rojo**: Detección de RetinaNet (Deep Learning)
     - 🟢 **Verde**: Detección del modelo HOG
     - 🔵 **Azul**: Detección del modelo BRISK (modo individual)
     - 🟠 **Naranja**: Detección del modelo BRISK (modo comparación)

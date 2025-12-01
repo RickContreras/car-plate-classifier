@@ -307,6 +307,7 @@ tensorboard/
 # Temporary files
 *.tmp
 *.bak
+temp/
 
 # Kaggle credentials
 kaggle.json

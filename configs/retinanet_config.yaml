@@ -1,0 +1,139 @@
+# Configuración RetinaNet para Detección de Placas Vehiculares
+
+# Información del Modelo
+model:
+  name: 'retinanet_plates'
+  num_classes: 1  # Solo placas vehiculares
+  input_shape: [640, 640, 3]
+  
+  # Configuración de Backbone
+  backbone:
+    type: 'resnet50'  # 'resnet50' o 'mobilenetv2'
+    weights: 'imagenet'  # 'imagenet', 'none', o ruta a pesos
+    trainable: false  # true para fine-tuning (más lento pero mejor)
+  
+  # Configuración de Feature Pyramid Network
+  fpn:
+    feature_size: 256  # Canales en todos los niveles de pirámide
+    num_levels: 5  # P3, P4, P5, P6, P7
+  
+  # Configuración de Classification/Box Subnets
+  subnets:
+    num_conv_layers: 4  # Capas convolucionales en cada subnet
+    num_filters: 256  # Filtros por capa
+  
+  # Configuración de Anchor Generator
+  anchors:
+    sizes: [32, 64, 128, 256, 512]  # Tamaños base para P3-P7
+    scales: [1.0, 1.26, 1.59]  # 2^(0/3), 2^(1/3), 2^(2/3)
+    aspect_ratios: [0.5, 1.0, 2.0]  # Ratios ancho/alto
+    strides: [8, 16, 32, 64, 128]  # Strides de cada nivel
+
+# Configuración de Entrenamiento
+training:
+  epochs: 10  # Aumentado para mejor convergencia
+  batch_size: 4  # Reducir si hay problemas de memoria
+  learning_rate: 0.0001  # 1e-4 es típico para RetinaNet
+  
+  # Optimizador
+  optimizer: 'adam'
+  
+  # Configuración de Pérdidas
+  loss:
+    focal_loss:
+      alpha: 0.25  # Balance foreground/background
+      gamma: 2.0  # Factor de enfoque
+    smooth_l1_loss:
+      delta: 1.0  # Punto de transición L1/L2
+    lambda_box: 1.0  # Peso de box loss vs classification loss
+  
+  # Callbacks
+  callbacks:
+    early_stopping:
+      enabled: true
+      monitor: 'val_loss'
+      patience: 20  # Más paciencia para convergencia
+      mode: 'min'
+    
+    reduce_lr:
+      enabled: true
+      monitor: 'val_loss'
+      factor: 0.5
+      patience: 10
+      min_lr: 1.0e-7
+      mode: 'min'
+    
+    model_checkpoint:
+      enabled: true
+      monitor: 'val_loss'
+      save_best_only: true
+      save_weights_only: false
+      mode: 'min'
+    
+    tensorboard:
+      enabled: true
+      update_freq: 'epoch'
+
+# Configuración de Datos
+data:
+  # Directorios
+  images_dir: 'data/raw/images'
+  annotations_dir: 'data/raw/annotations'
+  
+  # Split de datos
+  train_ratio: 0.8
+  shuffle: true
+  seed: 42
+  
+  # Preprocesamiento
+  image_shape: [640, 640]  # Resize a esta forma
+  normalize: true  # Normalización ImageNet
+  
+  # Anchor Matching
+  iou_threshold_pos: 0.5  # IoU >= 0.5 → anchor positiva
+  iou_threshold_neg: 0.4  # IoU < 0.4 → anchor negativa
+  
+  # Data Augmentation (TODO: implementar)
+  augmentation:
+    enabled: false
+    horizontal_flip: true
+    brightness_range: [0.8, 1.2]
+    contrast_range: [0.8, 1.2]
+
+# Configuración de Evaluación
+evaluation:
+  # Métricas
+  metrics: ['mAP', 'precision', 'recall']
+  
+  # Umbrales de IoU para métricas
+  iou_thresholds: [0.5, 0.75, 0.9]
+  
+  # Post-procesamiento
+  nms:
+    enabled: true
+    iou_threshold: 0.5
+    score_threshold: 0.3  # Filtrar detecciones con score < 0.3
+    max_detections: 100  # Máximo de detecciones por imagen
+
+# Rutas de Salida
+paths:
+  models: 'models'
+  logs: 'logs/retinanet'
+  results: 'results/retinanet'
+  checkpoints: 'models/checkpoints/retinanet'
+
+# Configuración de Hardware
+hardware:
+  gpu: true  # Usar GPU si está disponible
+  mixed_precision: false  # Mixed precision training (más rápido, menos memoria)
+  num_workers: 4  # Workers para carga de datos
+
+# Configuración de Reproducibilidad
+reproducibility:
+  seed: 42
+  deterministic: true
+
+# Comparación con Modelos Existentes
+comparison:
+  baseline_models: ['detection_hog', 'detection_brisk']
+  metrics_to_compare: ['avg_iou', 'mae', 'accuracy']
